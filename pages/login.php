@@ -13,13 +13,45 @@ global $_config;
 		<?php if($_config['recaptcha']['enable']) echo '<script src="https://www.recaptcha.net/recaptcha/api.js?render=' . $_config['recaptcha']['sitekey'] . '" defer></script>'; ?>
 		<title>登录 :: <?php echo $_config['sitename']; ?> - <?php echo $_config['description']; ?></title>
 	</head>
-	<body class="min-h-screen bg-slate-950 text-slate-100">
-		<div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image:url('https://i.loli.net/2019/08/13/7EqLWfi1tw6M2Qn.jpg');"></div>
-		<div class="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
-			<div class="w-full max-w-md rounded-2xl border border-white/10 bg-white/95 p-8 text-slate-800 shadow-2xl backdrop-blur">
-				<div class="mb-6">
-					<h1 class="text-2xl font-bold tracking-tight"><?php echo $_config['sitename']; ?></h1>
-					<p class="mt-1 text-sm text-slate-500"><?php echo $_config['description']; ?></p>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-3 padding-content"></div>
+				<div class="col-sm-6 main-content">
+					<table style="width: 100%;height: 100vh;">
+						<tr style="height: 100%;">
+							<td style="height: 100%;padding-bottom: 64px;">
+								<center>
+									<?php
+									if(isset($data['status']) && isset($data['message'])) {
+										$alertType = $data['status'] ? "success" : "danger";
+										echo '<div class="alert alert-' . $alertType . ' alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' . $data['message'] . '</div>';
+									}
+									?>
+									<div class="main-box text-left">
+										<h2 class="logo"><?php echo $_config['sitename']; ?></h2>
+										<p><?php echo $_config['description']; ?></p>
+										<hr>
+										<form method="POST" action="?action=login&page=login">
+											<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" />
+											<p><b>账号</b></p>
+											<p><input type="text" class="form-control" name="username" id="username" require /></p>
+											<p><b>密码</b></p>
+											<p><input type="password" class="form-control" name="password" id="password" require /></p>
+											<p><button type="submit" class="btn btn-primary full-width">登录</button></p>
+											<p class='text-center'>
+											<?php
+											if($_config['register']['enable']) {
+												echo "<a href='?page=register'>注册新账号</a> | ";
+											}
+											?>
+											<a href='?page=findpass'>忘记密码？</a> | <a href='?page=install'>安装向导</a></p>
+										</form>
+									</div>
+								</center>
+							</td>
+						</tr>
+					</table>
 				</div>
 
 				<?php
