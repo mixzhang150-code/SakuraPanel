@@ -132,17 +132,21 @@ class Smtp {
         $this->logWrite("Trying to {$this->relay_host}:{$this->smtp_port}\n");
         $this->sock = @fsockopen($this->relay_host, $this->smtp_port, $errno, $errstr, $this->time_out);
         if (!($this->sock && $this->smtpOk())) {
-            $this->logWrite("Error: Cannot connenct to relay host {$this->relay_host}\n");
+            $this->logWrite("Error: Cannot connect to relay host {$this->relay_host}\n");
             $this->logWrite("Error: {$errstr} ({$errno})\n");
             return false;
         }
         $this->logWrite("Connected to relay host {$this->relay_host}\n");
-        return true;;
+        return true;
     }
 	
     private function smtpSockopenMx($address)
 	{
-        $domain = ereg_replace("^.+@([^@]+)$", "\\1", $address);
+        $domain = $this->extractDomainFromAddress($address);
+        if ($domain === false) {
+            $this->logWrite("Error: Invalid e-mail address \"{$address}\"\n");
+            return false;
+        }
         if (!@getmxrr($domain, $MXHOSTS)) {
             $this->logWrite("Error: Cannot resolve MX \"{$domain}\"\n");
             return false;
@@ -160,6 +164,14 @@ class Smtp {
         }
         $this->logWrite("Error: Cannot connect to any mx hosts (" . implode(", ", $MXHOSTS) . ")\n");
         return false;
+    }
+	
+    private function extractDomainFromAddress($address)
+	{
+        if (preg_match('/^[^@]+@([^@]+)$/', $address, $matches) !== 1) {
+            return false;
+        }
+        return $matches[1];
     }
 	
     private function smtpMessage($header, $body)
