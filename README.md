@@ -29,19 +29,28 @@ git clone https://github.com/ZeroDream-CN/SakuraPanel/
 mv SakuraPanel/* /data/wwwroot/my.panel.com/
 chown -R www:www /data/wwwroot/my.panel.com/
 ```
-然后进入到网站目录，分别编辑以下三个文件，修改数据库信息
+然后进入到网站目录，先只需要确保 `configuration.php` 中数据库账号有权限访问目标数据库（数据库名可先按默认值）。
+
+接着访问安装页面：
+
+```text
+http://你的域名/?page=install
+```
+
+安装向导会自动完成以下步骤：
+
+- 保存站点和数据库配置到 `configuration.php`
+- 导入 `import.sql` 初始化表结构与默认数据
+- 创建管理员账号（`admin` 组）
+
+安装完成后，请继续手动检查并按需修改：
 
 | 文件名 | 作用 |
 | ------ | ------ |
-| __/configuration.php__ | 网站核心配置文件，里面每个配置项都有介绍 |
 | __/api/index.php__ | 用于对接 Frps，里面只需配置 Token |
 | __/daemon.php__ | 服务器守护进程，需要在命令行下运行，里面只需要配置数据库 |
 
-配置完成后，使用 Navicat、phpMyAdmin 等数据库管理软件创建一个数据库，然后导入 `import.sql`。
-
-数据库编码类型：utf8mb4 / utf8mb4_unicode_ci；数据库引擎：InnoDB
-
-导入完成后，打开网站，注册一个新账号，然后在数据库中设置这个账号的 __group__ 字段为 `admin` 即可设置为管理员。
+数据库建议编码类型：utf8mb4 / utf8mb4_unicode_ci；数据库引擎：InnoDB
 
 ## 配套 Frps 服务端
 本面板需要专用 Frps 才能兼容，请访问我的另一个项目：https://github.com/ZeroDream-CN/SakuraFrp

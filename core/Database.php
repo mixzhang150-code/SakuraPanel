@@ -7,7 +7,8 @@ class Database {
 	{
 		global $_config, $conn;
 		
-		$conn = mysqli_connect(
+		mysqli_report(MYSQLI_REPORT_OFF);
+		$conn = @mysqli_connect(
 			$_config['db_host'],
 			$_config['db_user'],
 			$_config['db_pass'],

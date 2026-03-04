@@ -11,6 +11,81 @@ class PostHandler {
 		
 		if(isset($params['action']) && preg_match("/^[A-Za-z0-9\_\-]{1,20}$/", $params['action'])) {
 			switch($params['action']) {
+			case "install":
+				$pages = new SakuraPanel\Pages();
+				$required = ['db_host', 'db_port', 'db_user', 'db_name', 'db_code', 'sitename', 'description', 'admin_user', 'admin_pass', 'admin_email'];
+				foreach($required as $field) {
+					if(!isset($_POST[$field]) || trim((string)$_POST[$field]) === "") {
+						$pages->loadPage("install", Array("status" => false, "message" => "请将安装信息填写完整", "form" => $_POST));
+						exit;
+					}
+				}
+
+				$dbPort = intval($_POST['db_port']);
+				if($dbPort <= 0 || $dbPort > 65535) {
+					$pages->loadPage("install", Array("status" => false, "message" => "数据库端口不合法", "form" => $_POST));
+					exit;
+				}
+
+				if(!filter_var($_POST['admin_email'], FILTER_VALIDATE_EMAIL)) {
+					$pages->loadPage("install", Array("status" => false, "message" => "管理员邮箱格式不正确", "form" => $_POST));
+					exit;
+				}
+
+				if(strlen($_POST['admin_pass']) < 6) {
+					$pages->loadPage("install", Array("status" => false, "message" => "管理员密码至少需要 6 个字符", "form" => $_POST));
+					exit;
+				}
+
+				$dbConn = @mysqli_connect($_POST['db_host'], $_POST['db_user'], $_POST['db_pass'] ?? '', $_POST['db_name'], $dbPort);
+				if(!$dbConn) {
+					$pages->loadPage("install", Array("status" => false, "message" => "数据库连接失败：" . mysqli_connect_error(), "form" => $_POST));
+					exit;
+				}
+
+				mysqli_set_charset($dbConn, $_POST['db_code']);
+				$sqlFile = ROOT . "/import.sql";
+				if(!file_exists($sqlFile)) {
+					$pages->loadPage("install", Array("status" => false, "message" => "未找到初始化 SQL 文件 import.sql", "form" => $_POST));
+					exit;
+				}
+
+				$sql = file_get_contents($sqlFile);
+				if(!@mysqli_multi_query($dbConn, $sql)) {
+					$pages->loadPage("install", Array("status" => false, "message" => "导入数据库失败：" . mysqli_error($dbConn), "form" => $_POST));
+					exit;
+				}
+
+				do {
+					if($result = mysqli_store_result($dbConn)) {
+						mysqli_free_result($result);
+					}
+				} while(mysqli_more_results($dbConn) && mysqli_next_result($dbConn));
+
+				$adminUser = mysqli_real_escape_string($dbConn, $_POST['admin_user']);
+				$adminMail = mysqli_real_escape_string($dbConn, $_POST['admin_email']);
+				$adminPass = password_hash($_POST['admin_pass'], PASSWORD_BCRYPT);
+				$adminPassEscaped = mysqli_real_escape_string($dbConn, $adminPass);
+				$token = substr(md5(sha1(md5($adminUser) . md5($adminPass) . time() . mt_rand(0, 9999999))), 0, 16);
+
+				$exists = mysqli_query($dbConn, "SELECT `id` FROM `users` WHERE `username`='{$adminUser}' LIMIT 1");
+				if(!$exists || mysqli_num_rows($exists) === 0) {
+					$traffic = intval($_config['register']['traffic']);
+					$proxies = intval($_config['register']['proxies']);
+					mysqli_query($dbConn, "INSERT INTO `users` (`username`,`password`,`email`,`traffic`,`proxies`,`group`,`regtime`,`status`) VALUES ('{$adminUser}','{$adminPassEscaped}','{$adminMail}','{$traffic}','{$proxies}','admin','" . time() . "','0')");
+					mysqli_query($dbConn, "INSERT INTO `tokens` (`username`,`token`,`status`) VALUES ('{$adminUser}','{$token}','0')");
+				}
+
+				mysqli_close($dbConn);
+
+				$saveResult = $this->saveInstallConfig($_POST);
+				if($saveResult !== true) {
+					$pages->loadPage("install", Array("status" => false, "message" => $saveResult, "form" => $_POST));
+					exit;
+				}
+
+				$pages->loadPage("install", Array("status" => true, "message" => "安装完成！请使用管理员账号登录。", "form" => $_POST));
+				break;
 				case "login":
 					$um = new SakuraPanel\UserManager();
 					$pages = new SakuraPanel\Pages();
@@ -369,4 +444,41 @@ class PostHandler {
 			}
 		}
 	}
+	private function saveInstallConfig($data)
+	{
+		$configFile = ROOT . "/configuration.php";
+		if(!is_writable($configFile)) {
+			return "configuration.php 不可写，请手动修改数据库配置";
+		}
+
+		$content = file_get_contents($configFile);
+		if($content === false) {
+			return "读取 configuration.php 失败";
+		}
+
+		$map = [
+			'sitename' => (string)$data['sitename'],
+			'description' => (string)$data['description'],
+			'db_host' => (string)$data['db_host'],
+			'db_user' => (string)$data['db_user'],
+			'db_pass' => (string)($data['db_pass'] ?? ''),
+			'db_name' => (string)$data['db_name'],
+			'db_code' => (string)$data['db_code'],
+		];
+
+		foreach($map as $key => $value) {
+			$escaped = str_replace(["\\", "'"], ["\\\\", "\\'"], $value);
+			$content = preg_replace("/('{$key}'\\s*=>\\s*)'[^']*'/", "\${1}'{$escaped}'", $content, 1);
+		}
+
+		$port = intval($data['db_port']);
+		$content = preg_replace("/('db_port'\\s*=>\\s*)\\d+/", "\${1}{$port}", $content, 1);
+
+		if(file_put_contents($configFile, $content) === false) {
+			return "写入 configuration.php 失败";
+		}
+
+		return true;
+	}
+
 }
