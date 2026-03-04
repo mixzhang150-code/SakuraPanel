@@ -23,6 +23,7 @@ if(isset($_GET['link']) && $_GET['link'] !== "") {
 		<meta http-equiv="X-UA-Compatible" content="IE=11">
 		<meta name="msapplication-TileColor" content="#F1F1F1">
 		<script src="https://cdn.tailwindcss.com"></script>
+		<?php if($_config['recaptcha']['enable']) echo '<script src="https://www.recaptcha.net/recaptcha/api.js?render=' . $_config['recaptcha']['sitekey'] . '" defer></script>'; ?>
 		<title>找回密码 :: <?php echo $_config['sitename']; ?> - <?php echo $_config['description']; ?></title>
 	</head>
 	<body class="min-h-screen bg-slate-950 text-slate-100">
@@ -42,10 +43,7 @@ if(isset($_GET['link']) && $_GET['link'] !== "") {
 				}
 				?>
 				<form method="POST" action="?action=findpass&page=findpass" class="space-y-4">
-					<div>
-						<label class="mb-1 block text-sm font-medium text-slate-700">人机验证（<?php echo $humanChallenge; ?>）</label>
-						<input type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" name="human_verify" id="human_verify" required />
-					</div>
+					<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" />
 					<div>
 						<label class="mb-1 block text-sm font-medium text-slate-700">账号或邮箱</label>
 						<input type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" name="username" id="username" required />
@@ -56,5 +54,20 @@ if(isset($_GET['link']) && $_GET['link'] !== "") {
 			</div>
 		</div>
 		<p class="fixed bottom-4 left-4 z-20 text-xs text-slate-300/90">&copy; <?php echo date("Y") . " {$_config['sitename']}"; ?></p>
+		<?php
+		if($_config['recaptcha']['enable']) {
+			echo <<<EOF
+		<script type="text/javascript">
+			window.onload = function() {
+				grecaptcha.ready(function() {
+					grecaptcha.execute('{$_config['recaptcha']['sitekey']}', {action:'validate_captcha'}).then(function(token) {
+						document.getElementById('g-recaptcha-response').value = token;
+					});
+				});
+			}
+		</script>
+EOF;
+		}
+		?>
 	</body>
 </html>

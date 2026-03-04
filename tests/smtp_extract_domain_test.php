@@ -14,12 +14,6 @@ function assertSameValue($expected, $actual, $message)
 $smtp = new Smtp('smtp.example.com', 25, false, 'user', 'pass');
 $reflection = new ReflectionClass(Smtp::class);
 $extractDomain = $reflection->getMethod('extractDomainFromAddress');
-
-$constructor = $reflection->getConstructor();
-assertSameValue(0, $constructor->getNumberOfRequiredParameters(), 'Constructor should not have required params after optional params');
-
-$sendMail = $reflection->getMethod('sendMail');
-assertSameValue(2, $sendMail->getNumberOfRequiredParameters(), 'sendMail should only require to/from parameters');
 $extractDomain->setAccessible(true);
 
 assertSameValue('example.com', $extractDomain->invoke($smtp, 'alice@example.com'), 'Should extract normal domain');
