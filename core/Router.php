@@ -19,7 +19,7 @@ if(isset($_GET['page']) && preg_match("/^[A-Za-z0-9\-\_]{1,8}$/", $_GET['page'])
 		}
 		$pages->loadPage($_GET['page']);
 	} else {
-		if($_GET['page'] !== "login" && $_GET['page'] !== "register" && $_GET['page'] !== "findpass") {
+		if($_GET['page'] !== "login" && $_GET['page'] !== "register" && $_GET['page'] !== "findpass" && $_GET['page'] !== "install") {
 			$pages->loadPage("login");
 		} else {
 			$pages->loadPage($_GET['page']);
