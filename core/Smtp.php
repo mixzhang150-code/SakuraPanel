@@ -15,7 +15,7 @@ class Smtp {
 	
     private $sock;
 	
-    public function __construct($relay_host = "", $smtp_port = 25, $auth = false, $user = "", $pass = "")
+    public function __construct($relay_host = "", $smtp_port = 25, $auth = false, $user, $pass)
 	{
         $this->debug      = false;
         $this->smtp_port  = $smtp_port;
@@ -29,7 +29,7 @@ class Smtp {
         $this->sock       = false;
     }
 	
-    public function sendMail($to, $from, $subject = "", $body = "", $mailtype = "TXT", $cc = "", $bcc = "", $additional_headers = "")
+    public function sendMail($to, $from, $subject = "", $body = "", $mailtype, $cc = "", $bcc = "", $additional_headers = "")
 	{
         $header    = "";
         $mail_from = $this->getAddress($this->stripComment($from));
