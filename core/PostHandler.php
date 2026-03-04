@@ -89,12 +89,10 @@ class PostHandler {
 				case "login":
 					$um = new SakuraPanel\UserManager();
 					$pages = new SakuraPanel\Pages();
-					if($_config['recaptcha']['enable']) {
-						if(!isset($_POST["g-recaptcha-response"]) || !Utils::reCAPTCHA($_POST["g-recaptcha-response"])) {
-							$data = Array("status" => false, "message" => "reCAPTCHA 验证失败，请刷新重试");
-							$pages->loadPage("login", $data);
-							exit;
-						}
+					if(!Utils::verifyHumanChallenge("login", $_POST['human_verify'] ?? "")) {
+						$data = Array("status" => false, "message" => "人机验证失败，请重试");
+						$pages->loadPage("login", $data);
+						exit;
 					}
 					$data = $um->doLogin($_POST);
 					if(isset($data['status']) && $data['status'] === true) {
@@ -108,12 +106,10 @@ class PostHandler {
 				case "register":
 					$um = new SakuraPanel\UserManager();
 					$pages = new SakuraPanel\Pages();
-					if($_config['recaptcha']['enable']) {
-						if(!isset($_POST["g-recaptcha-response"]) || !Utils::reCAPTCHA($_POST["g-recaptcha-response"])) {
-							$data = Array("status" => false, "message" => "reCAPTCHA 验证失败，请刷新重试");
-							$pages->loadPage("register", $data);
-							exit;
-						}
+					if(!Utils::verifyHumanChallenge("register", $_POST['human_verify'] ?? "")) {
+						$data = Array("status" => false, "message" => "人机验证失败，请重试");
+						$pages->loadPage("register", $data);
+						exit;
 					}
 					$data = $um->doRegister($_POST);
 					$pages->loadPage("register", $data);
@@ -145,12 +141,10 @@ class PostHandler {
 				case "findpass":
 					$um = new SakuraPanel\UserManager();
 					$pages = new SakuraPanel\Pages();
-					if($_config['recaptcha']['enable']) {
-						if(!isset($_POST["g-recaptcha-response"]) || !Utils::reCAPTCHA($_POST["g-recaptcha-response"])) {
-							$data = Array("status" => false, "message" => "reCAPTCHA 验证失败，请刷新重试");
-							$pages->loadPage("findpass", $data);
-							exit;
-						}
+					if(!Utils::verifyHumanChallenge("findpass", $_POST['human_verify'] ?? "")) {
+						$data = Array("status" => false, "message" => "人机验证失败，请重试");
+						$pages->loadPage("findpass", $data);
+						exit;
 					}
 					$data = $um->doFindpass($_POST);
 					$pages->loadPage("findpass", $data);

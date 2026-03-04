@@ -1,5 +1,6 @@
 <?php
 global $_config;
+$humanChallenge = \SakuraPanel\Utils::generateHumanChallenge('register');
 if(!$_config['register']['enable']) {
 	exit("<script>location='?page=login';</script>");
 }

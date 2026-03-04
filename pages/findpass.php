@@ -4,6 +4,7 @@ namespace SakuraPanel;
 use SakuraPanel;
 
 global $_config;
+$humanChallenge = Utils::generateHumanChallenge('findpass');
 
 if(isset($_GET['link']) && $_GET['link'] !== "") {
 	$um = new SakuraPanel\UserManager();

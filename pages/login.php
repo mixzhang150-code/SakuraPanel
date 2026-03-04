@@ -1,5 +1,6 @@
 <?php
 global $_config;
+$humanChallenge = \SakuraPanel\Utils::generateHumanChallenge('login');
 ?>
 <!DOCTYPE HTML>
 <html lang="zh_CN">
