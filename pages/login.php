@@ -8,13 +8,10 @@ global $_config;
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=11">
 		<meta name="msapplication-TileColor" content="#F1F1F1">
-		<link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-		<script src="https://cdn.bootcdn.net/ajax/libs/popper.js/2.11.7/cjs/popper.min.js"></script>
-		<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.min.js"></script>
 		<?php if($_config['recaptcha']['enable']) echo '<script src="https://www.recaptcha.net/recaptcha/api.js?render=' . $_config['recaptcha']['sitekey'] . '" defer></script>'; ?>
 		<title>登录 :: <?php echo $_config['sitename']; ?> - <?php echo $_config['description']; ?></title>
-		<style type="text/css">.full-width{width:100%;}.logo{font-weight:400;}body:before{content:"";display:block;position:fixed;left:0;top:0;width:100%;height:100%;z-index:-10;}body,body:before{background-color:#000;background-image:url(https://i.loli.net/2019/08/13/7EqLWfi1tw6M2Qn.jpg);background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;-webkit-background-size:cover;-moz-background-size:cover;-o-background-size:cover;}.main-box{width:100%;background:rgba(255,255,255,0.9);border:32px solid rgba(0,0,0,0);border-bottom:16px solid rgba(0,0,0,0);box-shadow:0px 0px 32px rgba(0,0,0,0.75);}.copyright{position:fixed;bottom:16px;left:32px;color:#FFF;font-size:16px;text-shadow:0px 0px 8px rgba(0,0,0,0.75);}@media screen and (max-width:992px){.padding-content{display:none;}.main-content{width:100%;max-width:100%;flex:0 0 100%;}.main-box{width:70%;}}@media screen and (max-width:768px){.padding-content{display:none;}.main-content{width:100%;max-width:100%;flex:0 0 100%;}.main-box{width:100%;}}</style>
 	</head>
 	<body>
 		<div class="container">
@@ -56,9 +53,45 @@ global $_config;
 						</tr>
 					</table>
 				</div>
+
+				<?php
+				if(isset($data['status']) && isset($data['message'])) {
+					$alertStyle = $data['status']
+						? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+						: 'border-rose-200 bg-rose-50 text-rose-700';
+					echo '<div class="mb-4 rounded-lg border px-4 py-3 text-sm ' . $alertStyle . '">' . $data['message'] . '</div>';
+				}
+				?>
+
+				<form method="POST" action="?action=login&page=login" class="space-y-4">
+					<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" />
+
+					<div>
+						<label class="mb-1 block text-sm font-medium text-slate-700">账号</label>
+						<input type="text" name="username" id="username" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+					</div>
+
+					<div>
+						<label class="mb-1 block text-sm font-medium text-slate-700">密码</label>
+						<input type="password" name="password" id="password" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+					</div>
+
+					<button type="submit" class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500">登录</button>
+
+					<p class="text-center text-sm text-slate-500">
+					<?php
+					if($_config['register']['enable']) {
+						echo "<a class='text-indigo-600 hover:text-indigo-500' href='?page=register'>注册新账号</a> <span class='mx-1 text-slate-300'>|</span> ";
+					}
+					?>
+					<a class="text-indigo-600 hover:text-indigo-500" href='?page=findpass'>忘记密码？</a>
+					<span class="mx-1 text-slate-300">|</span>
+					<a class="text-indigo-600 hover:text-indigo-500" href='?page=install'>安装向导</a>
+					</p>
+				</form>
 			</div>
 		</div>
-		<p class="copyright">&copy; <?php echo date("Y") . " {$_config['sitename']}"; ?></p>
+		<p class="fixed bottom-4 left-4 z-20 text-xs text-slate-300/90">&copy; <?php echo date("Y") . " {$_config['sitename']}"; ?></p>
 		<?php
 		if($_config['recaptcha']['enable']) {
 			echo <<<EOF
