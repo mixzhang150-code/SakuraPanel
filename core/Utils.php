@@ -26,6 +26,34 @@ class Utils {
 		return $json ? $json['success'] : false;
 	}
 	
+
+	public static function generateHumanChallenge($scene)
+	{
+		if(!isset($_SESSION['human_challenge']) || !is_array($_SESSION['human_challenge'])) {
+			$_SESSION['human_challenge'] = Array();
+		}
+		$a = mt_rand(1, 9);
+		$b = mt_rand(1, 9);
+		$_SESSION['human_challenge'][$scene] = Array(
+			'answer' => (string)($a + $b),
+			'time'   => time()
+		);
+		return "{$a} + {$b} = ?";
+	}
+
+	public static function verifyHumanChallenge($scene, $answer)
+	{
+		if(!isset($_SESSION['human_challenge'][$scene])) {
+			return false;
+		}
+		$challenge = $_SESSION['human_challenge'][$scene];
+		unset($_SESSION['human_challenge'][$scene]);
+		if(!isset($challenge['time']) || time() - intval($challenge['time']) > 600) {
+			return false;
+		}
+		return trim((string)$answer) === (string)$challenge['answer'];
+	}
+
 	public static function isHttps()
 	{
 		if (!isset($_SERVER['HTTPS'])) {
