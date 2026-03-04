@@ -48,7 +48,7 @@ global $_config;
 												echo "<a href='?page=register'>注册新账号</a> | ";
 											}
 											?>
-											<a href='?page=findpass'>忘记密码？</a></p>
+											<a href='?page=findpass'>忘记密码？</a> | <a href='?page=install'>安装向导</a></p>
 										</form>
 									</div>
 								</center>
